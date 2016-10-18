@@ -207,13 +207,26 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
 
     private void addView(String code) {
 
+        boolean currentCodeStatus = false;
         if (stackData.size() >= 3) {
             stackData.clear();
             linearLayout.removeAllViews();
         }
 
-        if (stackData.size() == 1) {
+        if (stackData.size() == 0) {
+            if (code.contains(codeFormate[0]) || code.contains(codeFormate[1])) {
+                currentCodeStatus = true;
+            } else {
+                currentCodeStatus = false;
+            }
+        }
 
+        if (stackData.size() == 1) {
+            if (code.contains(codeFormate[1]) || code.contains(codeFormate[2])) {
+                currentCodeStatus = true;
+            } else {
+                currentCodeStatus = false;
+            }
         }
 
         stackData.put(code, code);
@@ -229,7 +242,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                 stackData.remove(view.getTag().toString());
             }
         });
-        statusLayout.setStatusOK(true);
+        statusLayout.setStatusOK(currentCodeStatus);
         statusLayout.setCode(code);
         imgCross.setTag(code);
         linearLayout.addView(layout);
