@@ -11,22 +11,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.mvbarcodedemo.camera.CustomStatusLayout;
 import com.mvbarcodedemo.camera.GraphicOverlay;
 import com.mvbarcodedemo.detecthelper.BarcodeGraphic;
 import com.mvbarcodedemo.detecthelper.BarcodeTrackerFactory;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
-public class CaptureActivity extends AppCompatActivity {
+public class CaptureActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = CaptureActivity.class.getSimpleName();
     private Context context;
     private RelativeLayout parentFrm;
@@ -67,10 +74,17 @@ public class CaptureActivity extends AppCompatActivity {
         return c || super.onTouchEvent(e);
     }
 
+    @Override
+    public void onClick(View view) {
+
+    }
+
     private void initAllItems() {
+        linearLayout = (LinearLayout) findViewById(R.id.linear_status);
         camera_preview = (SurfaceView) findViewById(R.id.camera_preview);
         graphic_overlay = (GraphicOverlay) findViewById(R.id.graphic_overlay);
 
+        linearLayout.setOnClickListener(this);
         parentFrm = (RelativeLayout) findViewById(R.id.activity_capture);
         gestureDetector = new GestureDetector(this, new CaptureGestureListener());
 
@@ -164,9 +178,10 @@ public class CaptureActivity extends AppCompatActivity {
         }
 
         if (best != null) {
-            Snackbar.make(parentFrm, "Detect Code: " + best.rawValue,
-                    Snackbar.LENGTH_SHORT)
-                    .show();
+//            Snackbar.make(parentFrm, "Detect Code: " + best.rawValue,
+//                    Snackbar.LENGTH_SHORT)
+//                    .show();
+            addView(best.rawValue);
             return true;
         }
         return false;
@@ -183,6 +198,41 @@ public class CaptureActivity extends AppCompatActivity {
 
         Log.d(TAG, "isPortraitMode returning false by default");
         return false;
+    }
+
+
+    private LinearLayout linearLayout;
+    private LinkedHashMap<String, String> stackData = new LinkedHashMap<String, String>();
+    private String[] codeFormate = {"D", "0", "S"};
+
+    private void addView(String code) {
+
+        if (stackData.size() >= 3) {
+            stackData.clear();
+            linearLayout.removeAllViews();
+        }
+
+        if (stackData.size() == 1) {
+
+        }
+
+        stackData.put(code, code);
+
+        RelativeLayout layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.layout.include_status, null);
+        layout.setLayoutParams(new RelativeLayout.LayoutParams((getResources().getDisplayMetrics().widthPixels) / 3, RelativeLayout.LayoutParams.WRAP_CONTENT));
+        CustomStatusLayout statusLayout = (CustomStatusLayout) layout.findViewById(R.id.view_status);
+        ImageView imgCross = (ImageView) layout.findViewById(R.id.img_cross);
+        (imgCross).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                linearLayout.removeView((RelativeLayout) view.getParent());
+                stackData.remove(view.getTag().toString());
+            }
+        });
+        statusLayout.setStatusOK(true);
+        statusLayout.setCode(code);
+        imgCross.setTag(code);
+        linearLayout.addView(layout);
     }
 
 }
