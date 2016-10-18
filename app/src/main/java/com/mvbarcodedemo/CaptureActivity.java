@@ -29,6 +29,7 @@ import com.mvbarcodedemo.camera.GraphicOverlay;
 import com.mvbarcodedemo.detecthelper.BarcodeGraphic;
 import com.mvbarcodedemo.detecthelper.BarcodeTrackerFactory;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -205,6 +206,8 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     private LinkedHashMap<String, String> stackData = new LinkedHashMap<String, String>();
     private String[] codeFormate = {"D", "0", "S"};
 
+    private enum CodeType {DOC, FOLDER, SHELF}
+
     private void addView(String code) {
 
         boolean currentCodeStatus = false;
@@ -214,7 +217,9 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         if (stackData.size() == 0) {
-            if (code.contains(codeFormate[0]) || code.contains(codeFormate[1])) {
+            if (code.contains(codeFormate[CodeType.DOC.ordinal()])) {
+                currentCodeStatus = true;
+            } else if (code.contains(codeFormate[CodeType.FOLDER.ordinal()])) {
                 currentCodeStatus = true;
             } else {
                 currentCodeStatus = false;
@@ -222,7 +227,10 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         if (stackData.size() == 1) {
-            if (code.contains(codeFormate[1]) || code.contains(codeFormate[2])) {
+            String prevCode = stackData.entrySet().toArray()[0].toString();
+            if (prevCode.contains(codeFormate[CodeType.DOC.ordinal()]) && code.contains(codeFormate[CodeType.FOLDER.ordinal()])) {
+                currentCodeStatus = true;
+            } else if (prevCode.contains(codeFormate[CodeType.FOLDER.ordinal()]) && code.contains(codeFormate[CodeType.SHELF.ordinal()])) {
                 currentCodeStatus = true;
             } else {
                 currentCodeStatus = false;
